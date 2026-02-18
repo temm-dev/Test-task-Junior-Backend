@@ -31,8 +31,8 @@
 ### 1. Клонировать репозиторий
 
 ```bash
-git clone https://github.com/yourusername/instagram-sync.git
-cd instagram-sync
+git clone git@github.com:temm-dev/Test-task-Junior-Backend.git
+cd Test-task-Junior-Backend
 ```
 
 ### 2. Создать файл .env
@@ -81,7 +81,7 @@ docker-compose exec web python manage.py createsuperuser
 ### Синхронизация постов
 
 ```bash
-curl -X POST http://localhost:8000/api/posts/sync/
+curl -X POST http://localhost:8000/api/sync/
 ```
 
 
