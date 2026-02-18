@@ -63,25 +63,24 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='comment')
     def add_comment(self, request, pk=None):
-        post = self.get_object()  # получаем пост по pk (внутренний id)
+        post = self.get_object()  # получение поста по id
 
-        # Валидируем входные данные
+        # валидация
         serializer = CommentCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         text = serializer.validated_data['text']
 
-        # Отправляем комментарий в Instagram
+        # отправка комента
         client = InstagramClient(settings.INSTAGRAM_ACCESS_TOKEN, settings.INSTAGRAM_USER_ID)
         try:
             instagram_response = client.post_comment(post.instagram_id, text)
         except Exception as e:
-            # Обрабатываем ошибку (пост мог быть удалён в Instagram)
             return Response(
                 {'error': f'Instagram API error: {str(e)}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Из ответа Instagram получаем id созданного комментария
+        # получаем id комента
         instagram_comment_id = instagram_response.get('id')
         if not instagram_comment_id:
             return Response(
@@ -89,19 +88,15 @@ class PostViewSet(viewsets.ReadOnlyModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        # Сохраняем комментарий в БД
-        # Для упрощения timestamp и username не сохраняем (можно потом получить дополнительным запросом)
-        # Или можно сразу сохранить то, что есть. В реальном проекте, вероятно, нужно получить данные комментария.
-        # Но по заданию достаточно сохранить комментарий. Для timestamp используем текущее время.
+        # сохранить в бд
         from django.utils import timezone
         comment = Comment.objects.create(
             instagram_id=instagram_comment_id,
             post=post,
             text=text,
             timestamp=timezone.now(),
-            username='',  # можно оставить пустым или запросить отдельно
+            username='',
         )
 
-        # Возвращаем сериализованный комментарий
         output_serializer = CommentSerializer(comment)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)

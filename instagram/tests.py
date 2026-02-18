@@ -21,7 +21,6 @@ class CommentTests(TestCase):
 
     @patch('instagram.views.InstagramClient.post_comment')
     def test_create_comment_success(self, mock_post_comment):
-        # Мокаем ответ Instagram API
         mock_post_comment.return_value = {'id': 'comment_123'}
 
         url = reverse('post-add-comment', args=[self.post.id])
